@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ImportModal } from './components/ImportModal';
 import type { Patient, TheaterListInfo, TheaterList, Doctor, Hospital } from './types';
 import { Header } from './components/Header';
@@ -61,12 +61,64 @@ const App: React.FC = () => {
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState<boolean>(false);
   const [listToDeleteId, setListToDeleteId] = useState<number | null>(null);
 
-  const [theaterLists, setTheaterLists] = useState<TheaterList[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>(INITIAL_DOCTORS);
-  const [hospitals, setHospitals] = useState<Hospital[]>(INITIAL_HOSPITALS);
-  const [aiPrompt, setAiPrompt] = useState<string>(INITIAL_AI_PROMPT);
-  const [emailHeaderTemplate, setEmailHeaderTemplate] = useState<string>(INITIAL_EMAIL_HEADER);
-  const [emailBodyTemplate, setEmailBodyTemplate] = useState<string>(INITIAL_EMAIL_BODY);
+  const [theaterLists, setTheaterLists] = useState<TheaterList[]>(() => {
+    try {
+      const savedLists = localStorage.getItem('theaterLists');
+      return savedLists ? JSON.parse(savedLists) : [];
+    } catch (error) {
+      console.error("Error parsing theater lists from localStorage", error);
+      return [];
+    }
+  });
+  
+  const [doctors, setDoctors] = useState<Doctor[]>(() => {
+    try {
+      const savedDoctors = localStorage.getItem('doctors');
+      return savedDoctors ? JSON.parse(savedDoctors) : INITIAL_DOCTORS;
+    } catch (error) {
+      console.error("Error parsing doctors from localStorage", error);
+      return INITIAL_DOCTORS;
+    }
+  });
+
+  const [hospitals, setHospitals] = useState<Hospital[]>(() => {
+    try {
+      const savedHospitals = localStorage.getItem('hospitals');
+      return savedHospitals ? JSON.parse(savedHospitals) : INITIAL_HOSPITALS;
+    } catch (error) {
+      console.error("Error parsing hospitals from localStorage", error);
+      return INITIAL_HOSPITALS;
+    }
+  });
+  
+  const [aiPrompt, setAiPrompt] = useState<string>(() => localStorage.getItem('aiPrompt') || INITIAL_AI_PROMPT);
+  const [emailHeaderTemplate, setEmailHeaderTemplate] = useState<string>(() => localStorage.getItem('emailHeaderTemplate') || INITIAL_EMAIL_HEADER);
+  const [emailBodyTemplate, setEmailBodyTemplate] = useState<string>(() => localStorage.getItem('emailBodyTemplate') || INITIAL_EMAIL_BODY);
+
+  useEffect(() => {
+    localStorage.setItem('theaterLists', JSON.stringify(theaterLists));
+  }, [theaterLists]);
+
+  useEffect(() => {
+    localStorage.setItem('doctors', JSON.stringify(doctors));
+  }, [doctors]);
+
+  useEffect(() => {
+    localStorage.setItem('hospitals', JSON.stringify(hospitals));
+  }, [hospitals]);
+
+  useEffect(() => {
+    localStorage.setItem('aiPrompt', aiPrompt);
+  }, [aiPrompt]);
+
+  useEffect(() => {
+    localStorage.setItem('emailHeaderTemplate', emailHeaderTemplate);
+  }, [emailHeaderTemplate]);
+
+  useEffect(() => {
+    localStorage.setItem('emailBodyTemplate', emailBodyTemplate);
+  }, [emailBodyTemplate]);
+
 
   const handleImport = (info: TheaterListInfo, parsedPatients: Patient[]) => {
     const newList: TheaterList = {
