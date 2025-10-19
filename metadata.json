@@ -1,0 +1,5 @@
+{
+  "name": "Patient Theater List Manager",
+  "description": "A desktop application to import and manage patient data from theater lists in .xlsx format. It provides a clear, multi-row view for each patient's details.",
+  "requestFramePermissions": []
+}
