@@ -607,31 +607,38 @@ const PatientRow: React.FC<PatientRowProps> = ({ patient, index, onUpdate }) => 
         <div className="p-3 hover:bg-black hover:bg-opacity-20 transition-colors duration-200">
             {/* Collapsed View / Header */}
             <div 
-                className="flex flex-wrap items-center justify-between cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="flex items-center flex-shrink-0 mr-4">
-                    <div className="flex-shrink-0 w-8 h-8 mr-3 bg-[#00796B] rounded-full flex items-center justify-center text-white font-bold">
-                        {index + 1}
+                {/* Top row with flex layout */}
+                <div className="flex flex-wrap items-center justify-between">
+                    {/* Left side: Name and stats, allowed to grow and wrap */}
+                    <div className="flex-grow flex items-center flex-wrap">
+                        <div className="flex items-center flex-shrink-0 mr-4">
+                            <div className="flex-shrink-0 w-8 h-8 mr-3 bg-[#00796B] rounded-full flex items-center justify-center text-white font-bold">
+                                {index + 1}
+                            </div>
+                            <p className="text-lg font-bold text-white">{patient.name}</p>
+                        </div>
+                        
+                        <div className="flex items-center flex-wrap flex-shrink-0 [&>div]:!flex-initial [&>div]:!min-w-0">
+                            <DataItem label="Age" value={patient.age} />
+                            <DataItem label="Gender" value={patient.gender} />
+                            <DataItem label="Weight (kg)" value={patient.weight} />
+                            <DataItem label="Height (m)" value={patient.height} />
+                            <DataItem label="BMI" value={calculateBmi()} />
+                        </div>
                     </div>
-                    <p className="text-lg font-bold text-white">{patient.name}</p>
-                </div>
-                
-                <div className="flex-grow flex items-center flex-wrap md:flex-nowrap gap-x-6">
-                    {/* Stats Group */}
-                    <div className="flex items-center flex-wrap flex-shrink-0 [&>div]:!flex-initial [&>div]:!min-w-0">
-                        <DataItem label="Age" value={patient.age} />
-                        <DataItem label="Gender" value={patient.gender} />
-                        <DataItem label="Weight (kg)" value={patient.weight} />
-                        <DataItem label="Height (m)" value={patient.height} />
-                        <DataItem label="BMI" value={calculateBmi()} />
+
+                    {/* Right side: Chevron icon, does not shrink */}
+                    <div className="ml-4 flex-shrink-0">
+                         <PatientChevronIcon isExpanded={isExpanded} />
                     </div>
-                    {/* Procedure takes remaining space */}
-                    <DataItem label="Procedure" value={patient.procedureSummary} />
                 </div>
 
-                <div className="ml-4">
-                     <PatientChevronIcon isExpanded={isExpanded} />
+                {/* Second row for procedure */}
+                <div className="mt-2 pl-11"> {/* Indent to align with name */}
+                    <DataItem label="Procedure" value={patient.procedureSummary} />
                 </div>
             </div>
 
