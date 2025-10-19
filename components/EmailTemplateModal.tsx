@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 
 interface EmailTemplateModalProps {
   isOpen: boolean;
@@ -9,10 +9,10 @@ interface EmailTemplateModalProps {
 }
 
 export const EmailTemplateModal: React.FC<EmailTemplateModalProps> = ({ isOpen, onClose, headerTemplate, bodyTemplate, onSave }) => {
-  const [editedHeader, setEditedHeader] = useState(headerTemplate);
-  const [editedBody, setEditedBody] = useState(bodyTemplate);
+  const [editedHeader, setEditedHeader] = React.useState(headerTemplate);
+  const [editedBody, setEditedBody] = React.useState(bodyTemplate);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       setEditedHeader(headerTemplate);
       setEditedBody(bodyTemplate);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import type { TheaterList, Doctor, Patient } from '../types.ts';
 
 interface ActionPanelProps {
@@ -43,9 +43,9 @@ const ActionSection: React.FC<{ title: string; children: React.ReactNode }> = ({
 );
 
 export const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick, onOpenQuickImportModal, emailHeaderTemplate, emailBodyTemplate }) => {
-    const [headerCopyText, setHeaderCopyText] = useState('Copy Header');
-    const [bodyCopyText, setBodyCopyText] = useState('Copy Body');
-    const [isCreatingPdfs, setIsCreatingPdfs] = useState(false);
+    const [headerCopyText, setHeaderCopyText] = React.useState('Copy Header');
+    const [bodyCopyText, setBodyCopyText] = React.useState('Copy Body');
+    const [isCreatingPdfs, setIsCreatingPdfs] = React.useState(false);
     
     const handleExportQuickData = () => {
         const wb = XLSX.utils.book_new();

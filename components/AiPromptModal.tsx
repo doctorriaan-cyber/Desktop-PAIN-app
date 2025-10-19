@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 
 interface AiPromptModalProps {
   isOpen: boolean;
@@ -8,9 +8,9 @@ interface AiPromptModalProps {
 }
 
 export const AiPromptModal: React.FC<AiPromptModalProps> = ({ isOpen, onClose, prompt, onSave }) => {
-  const [editedPrompt, setEditedPrompt] = useState(prompt);
+  const [editedPrompt, setEditedPrompt] = React.useState(prompt);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
       setEditedPrompt(prompt);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import * as React from 'react';
 import type { Patient, TheaterListInfo, Doctor, Hospital } from '../types.ts';
 
 interface ImportModalProps {
@@ -35,33 +35,33 @@ const FileUploadIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, doctors, onAddDoctor, hospitals, onAddHospital }) => {
-  const [step, setStep] = useState<number>(1);
-  const [doctorName, setDoctorName] = useState<string>('');
-  const [hospitalLocation, setHospitalLocation] = useState<string>('');
-  const [date, setDate] = useState<string>(getNextWeekday());
-  const [fileName, setFileName] = useState<string>('');
-  const [file, setFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = React.useState<number>(1);
+  const [doctorName, setDoctorName] = React.useState<string>('');
+  const [hospitalLocation, setHospitalLocation] = React.useState<string>('');
+  const [date, setDate] = React.useState<string>(getNextWeekday());
+  const [fileName, setFileName] = React.useState<string>('');
+  const [file, setFile] = React.useState<File | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | null>(null);
   
   // State for doctor autocomplete
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
-  const [isDoctorDropdownOpen, setIsDoctorDropdownOpen] = useState(false);
+  const [filteredDoctors, setFilteredDoctors] = React.useState<Doctor[]>([]);
+  const [isDoctorDropdownOpen, setIsDoctorDropdownOpen] = React.useState(false);
   
   // State for hospital autocomplete
-  const [filteredHospitals, setFilteredHospitals] = useState<Hospital[]>([]);
-  const [isHospitalDropdownOpen, setIsHospitalDropdownOpen] = useState(false);
+  const [filteredHospitals, setFilteredHospitals] = React.useState<Hospital[]>([]);
+  const [isHospitalDropdownOpen, setIsHospitalDropdownOpen] = React.useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const filtered = doctors.filter(doc => 
       doc.name.toLowerCase().includes(doctorName.toLowerCase())
     );
     setFilteredDoctors(filtered);
   }, [doctorName, doctors]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const filtered = hospitals.filter(h => 
       h.name.toLowerCase().includes(hospitalLocation.toLowerCase())
     );

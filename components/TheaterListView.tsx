@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import { ActionPanel } from './ActionPanel.tsx';
 import { PatientTable } from './PatientTable.tsx';
 import type { Patient, TheaterList, Doctor } from '../types.ts';
@@ -14,7 +14,7 @@ interface TheaterListViewProps {
 }
 
 export const TheaterListView: React.FC<TheaterListViewProps> = ({ list, doctors, onDelete, onUpdatePatient, onOpenQuickImportModal, emailHeaderTemplate, emailBodyTemplate }) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
 
     const handleToggleCollapse = () => {
         setIsCollapsed(prevState => !prevState);

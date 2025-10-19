@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 
 interface HeaderProps {
     onImportClick: () => void;
@@ -41,7 +41,7 @@ const MailIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 
 export const Header: React.FC<HeaderProps> = ({ onImportClick, onDoctorsClick, onHospitalsClick, onEditAiPromptClick, onEditEmailTemplateClick, aiPrompt }) => {
-    const [copyButtonText, setCopyButtonText] = useState('Copy AI Prompt');
+    const [copyButtonText, setCopyButtonText] = React.useState('Copy AI Prompt');
     
     const handleCopy = () => {
         navigator.clipboard.writeText(aiPrompt).then(() => {

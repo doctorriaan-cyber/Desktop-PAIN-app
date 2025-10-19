@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import * as React from 'react';
 import type { Patient } from '../types.ts';
 
 interface QuickImportModalProps {
@@ -22,12 +22,12 @@ const CheckCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 export const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, onImport }) => {
-  const [fileName, setFileName] = useState<string>('');
-  const [file, setFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<Partial<Patient>[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileName, setFileName] = React.useState<string>('');
+  const [file, setFile] = React.useState<File | null>(null);
+  const [parsedData, setParsedData] = React.useState<Partial<Patient>[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 

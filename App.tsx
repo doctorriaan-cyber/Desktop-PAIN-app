@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import { ImportModal } from './components/ImportModal.tsx';
 import type { Patient, TheaterListInfo, TheaterList, Doctor, Hospital } from './types.ts';
 import { Header } from './components/Header.tsx';
@@ -51,17 +51,17 @@ The procedures were done by [doctor name] at the [hospital name]`;
 
 
 const App: React.FC = () => {
-  const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false);
-  const [isQuickImportModalOpen, setIsQuickImportModalOpen] = useState<boolean>(false);
-  const [activeListIdForQuickImport, setActiveListIdForQuickImport] = useState<number | null>(null);
-  const [isDoctorsModalOpen, setIsDoctorsModalOpen] = useState<boolean>(false);
-  const [isHospitalsModalOpen, setIsHospitalsModalOpen] = useState<boolean>(false);
-  const [isAiPromptModalOpen, setIsAiPromptModalOpen] = useState<boolean>(false);
-  const [isEmailTemplateModalOpen, setIsEmailTemplateModalOpen] = useState<boolean>(false);
-  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState<boolean>(false);
-  const [listToDeleteId, setListToDeleteId] = useState<number | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState<boolean>(false);
+  const [isQuickImportModalOpen, setIsQuickImportModalOpen] = React.useState<boolean>(false);
+  const [activeListIdForQuickImport, setActiveListIdForQuickImport] = React.useState<number | null>(null);
+  const [isDoctorsModalOpen, setIsDoctorsModalOpen] = React.useState<boolean>(false);
+  const [isHospitalsModalOpen, setIsHospitalsModalOpen] = React.useState<boolean>(false);
+  const [isAiPromptModalOpen, setIsAiPromptModalOpen] = React.useState<boolean>(false);
+  const [isEmailTemplateModalOpen, setIsEmailTemplateModalOpen] = React.useState<boolean>(false);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = React.useState<boolean>(false);
+  const [listToDeleteId, setListToDeleteId] = React.useState<number | null>(null);
 
-  const [theaterLists, setTheaterLists] = useState<TheaterList[]>(() => {
+  const [theaterLists, setTheaterLists] = React.useState<TheaterList[]>(() => {
     try {
       const savedLists = localStorage.getItem('theaterLists');
       return savedLists ? JSON.parse(savedLists) : [];
@@ -71,7 +71,7 @@ const App: React.FC = () => {
     }
   });
   
-  const [doctors, setDoctors] = useState<Doctor[]>(() => {
+  const [doctors, setDoctors] = React.useState<Doctor[]>(() => {
     try {
       const savedDoctors = localStorage.getItem('doctors');
       return savedDoctors ? JSON.parse(savedDoctors) : INITIAL_DOCTORS;
@@ -81,7 +81,7 @@ const App: React.FC = () => {
     }
   });
 
-  const [hospitals, setHospitals] = useState<Hospital[]>(() => {
+  const [hospitals, setHospitals] = React.useState<Hospital[]>(() => {
     try {
       const savedHospitals = localStorage.getItem('hospitals');
       return savedHospitals ? JSON.parse(savedHospitals) : INITIAL_HOSPITALS;
@@ -91,31 +91,31 @@ const App: React.FC = () => {
     }
   });
   
-  const [aiPrompt, setAiPrompt] = useState<string>(() => localStorage.getItem('aiPrompt') || INITIAL_AI_PROMPT);
-  const [emailHeaderTemplate, setEmailHeaderTemplate] = useState<string>(() => localStorage.getItem('emailHeaderTemplate') || INITIAL_EMAIL_HEADER);
-  const [emailBodyTemplate, setEmailBodyTemplate] = useState<string>(() => localStorage.getItem('emailBodyTemplate') || INITIAL_EMAIL_BODY);
+  const [aiPrompt, setAiPrompt] = React.useState<string>(() => localStorage.getItem('aiPrompt') || INITIAL_AI_PROMPT);
+  const [emailHeaderTemplate, setEmailHeaderTemplate] = React.useState<string>(() => localStorage.getItem('emailHeaderTemplate') || INITIAL_EMAIL_HEADER);
+  const [emailBodyTemplate, setEmailBodyTemplate] = React.useState<string>(() => localStorage.getItem('emailBodyTemplate') || INITIAL_EMAIL_BODY);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('theaterLists', JSON.stringify(theaterLists));
   }, [theaterLists]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('doctors', JSON.stringify(doctors));
   }, [doctors]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('hospitals', JSON.stringify(hospitals));
   }, [hospitals]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('aiPrompt', aiPrompt);
   }, [aiPrompt]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('emailHeaderTemplate', emailHeaderTemplate);
   }, [emailHeaderTemplate]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem('emailBodyTemplate', emailBodyTemplate);
   }, [emailBodyTemplate]);
 

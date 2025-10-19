@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
 import type { Doctor } from '../types.ts';
 
 interface DoctorsModalProps {
@@ -22,9 +22,9 @@ const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 
 export const DoctorsModal: React.FC<DoctorsModalProps> = ({ isOpen, onClose, doctors, onSave }) => {
-  const [editableDoctors, setEditableDoctors] = useState<Doctor[]>([]);
+  const [editableDoctors, setEditableDoctors] = React.useState<Doctor[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Deep copy to prevent mutating original state
     if (isOpen) {
       setEditableDoctors(JSON.parse(JSON.stringify(doctors)));

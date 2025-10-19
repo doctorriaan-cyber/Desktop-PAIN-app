@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import * as React from 'react';
 import type { Patient } from '../types.ts';
 
 interface PatientRowProps {
@@ -55,7 +55,7 @@ const PatientChevronIcon: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) =
 
 
 export const PatientRow: React.FC<PatientRowProps> = ({ patient, index, onUpdate }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = React.useState(false);
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
