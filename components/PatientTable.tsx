@@ -1,6 +1,6 @@
 import React from 'react';
-import type { Patient, TheaterListInfo } from '../types';
-import { PatientRow } from './PatientRow';
+import type { Patient, TheaterListInfo } from '../types.ts';
+import { PatientRow } from './PatientRow.tsx';
 
 interface PatientTableProps {
   info: TheaterListInfo;

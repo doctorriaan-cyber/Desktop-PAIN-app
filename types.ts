@@ -1,6 +1,3 @@
-import { Patient } from "./Patient";
-import { TheaterListInfo } from "./TheaterListInfo";
-
 export interface Patient {
   name: string;
   telephone: string;

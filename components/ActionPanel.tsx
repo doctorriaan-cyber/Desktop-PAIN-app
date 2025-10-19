@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { TheaterList, Doctor, Patient } from '../types';
+import type { TheaterList, Doctor, Patient } from '../types.ts';
 
 interface ActionPanelProps {
     list: TheaterList;

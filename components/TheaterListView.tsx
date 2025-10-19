@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ActionPanel } from './ActionPanel';
-import { PatientTable } from './PatientTable';
-import type { Patient, TheaterList, Doctor } from '../types';
+import { ActionPanel } from './ActionPanel.tsx';
+import { PatientTable } from './PatientTable.tsx';
+import type { Patient, TheaterList, Doctor } from '../types.ts';
 
 interface TheaterListViewProps {
     list: TheaterList;

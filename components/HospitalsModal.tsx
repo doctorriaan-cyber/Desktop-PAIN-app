@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Hospital } from '../types';
+import type { Hospital } from '../types.ts';
 
 interface HospitalsModalProps {
   isOpen: boolean;

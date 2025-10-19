@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ImportModal } from './components/ImportModal';
-import type { Patient, TheaterListInfo, TheaterList, Doctor, Hospital } from './types';
-import { Header } from './components/Header';
-import { WelcomeScreen } from './components/WelcomeScreen';
-import { TheaterListView } from './components/TheaterListView';
-import { DoctorsModal } from './components/DoctorsModal';
-import { HospitalsModal } from './components/HospitalsModal';
-import { AiPromptModal } from './components/AiPromptModal';
-import { QuickImportModal } from './components/QuickImportModal';
-import { EmailTemplateModal } from './components/EmailTemplateModal';
-import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
+import { ImportModal } from './components/ImportModal.tsx';
+import type { Patient, TheaterListInfo, TheaterList, Doctor, Hospital } from './types.ts';
+import { Header } from './components/Header.tsx';
+import { WelcomeScreen } from './components/WelcomeScreen.tsx';
+import { TheaterListView } from './components/TheaterListView.tsx';
+import { DoctorsModal } from './components/DoctorsModal.tsx';
+import { HospitalsModal } from './components/HospitalsModal.tsx';
+import { AiPromptModal } from './components/AiPromptModal.tsx';
+import { QuickImportModal } from './components/QuickImportModal.tsx';
+import { EmailTemplateModal } from './components/EmailTemplateModal.tsx';
+import { ConfirmDeleteModal } from './components/ConfirmDeleteModal.tsx';
 
 const INITIAL_DOCTORS: Doctor[] = [
   { id: 1, name: 'Dr Riaan Combrinck', practiceNumber: 'PP 0825557' },

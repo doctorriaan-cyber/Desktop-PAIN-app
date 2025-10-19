@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Patient } from '../types';
+import type { Patient } from '../types.ts';
 
 interface PatientRowProps {
   patient: Patient;
