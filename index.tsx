@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 
@@ -241,7 +242,8 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
   const [file, setFile] = React.useState<File | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
-  
+  const [parsedPatients, setParsedPatients] = React.useState<(Patient & { isSelected: boolean })[]>([]);
+
   // State for doctor autocomplete
   const [filteredDoctors, setFilteredDoctors] = React.useState<Doctor[]>([]);
   const [isDoctorDropdownOpen, setIsDoctorDropdownOpen] = React.useState(false);
@@ -277,6 +279,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
     setFile(null);
     setIsLoading(false);
     setError(null);
+    setParsedPatients([]);
   };
 
   const handleClose = () => {
@@ -327,7 +330,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
 
         if (json.length < 2) throw new Error("Spreadsheet is empty or has no data rows.");
 
-        const parsedPatients: Patient[] = json.slice(1).map((row: any[]) => {
+        const localParsedPatients: Patient[] = json.slice(1).map((row: any[]) => {
           let telephone = String(row[1] || '');
           if (telephone && /^\d+$/.test(telephone) && !telephone.startsWith('0')) {
             telephone = '0' + telephone;
@@ -361,9 +364,9 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
           };
         });
         
-        const info: TheaterListInfo = { doctorName, hospitalLocation, date };
-        onImport(info, parsedPatients);
-        handleClose();
+        setParsedPatients(localParsedPatients.map(p => ({...p, isSelected: true})));
+        setStep(3);
+        setIsLoading(false);
       } catch (err) {
         console.error("File parsing error:", err);
         setError(`Failed to parse file. Please ensure it's a valid .xlsx file. Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
@@ -377,6 +380,13 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
     reader.readAsArrayBuffer(file);
   };
   
+  const handleConfirmImport = () => {
+    const info: TheaterListInfo = { doctorName, hospitalLocation, date };
+    const selectedPatients = parsedPatients.filter(p => p.isSelected).map(({isSelected, ...rest}) => rest);
+    onImport(info, selectedPatients);
+    handleClose();
+  };
+
   const handleDoctorSelect = (name: string) => {
     setDoctorName(name);
     setIsDoctorDropdownOpen(false);
@@ -387,11 +397,26 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
     setIsHospitalDropdownOpen(false);
   }
 
+  const handleTogglePatientSelection = (patientIndex: number) => {
+    setParsedPatients(currentPatients => 
+      currentPatients.map((p, index) => 
+        index === patientIndex ? { ...p, isSelected: !p.isSelected } : p
+      )
+    );
+  };
+
+  const handleToggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setParsedPatients(currentPatients => 
+      currentPatients.map(p => ({ ...p, isSelected: checked }))
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 transition-opacity duration-300">
       <div className="bg-[#004D40] rounded-xl shadow-2xl p-8 w-full max-w-lg mx-4 transform transition-all duration-300 scale-95 animate-fade-in-up">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">Import Theater List - Step {step} of 2</h2>
+          <h2 className="text-2xl font-bold text-white">Import Theater List - Step {step} of 3</h2>
           <button onClick={handleClose} className="text-gray-400 hover:text-white">&times;</button>
         </div>
         
@@ -491,7 +516,44 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
               <button onClick={() => setStep(1)} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Back</button>
               <button onClick={handleFileParse} disabled={!file || isLoading} className="bg-[#00796B] hover:bg-[#00695C] text-white font-bold py-2 px-4 rounded-lg transition duration-300 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center">
                 {isLoading && <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>}
-                {isLoading ? 'Importing...' : 'Import'}
+                {isLoading ? 'Parsing...' : 'Parse File'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <p className="text-lg text-white mb-2">Found {parsedPatients.length} patients. Uncheck any patients you do not want to import:</p>
+            <div className="bg-[#003638] p-3 rounded-md max-h-60 overflow-y-auto mb-6">
+              <div className="flex items-center p-1 mb-2 border-b border-[#00796B]">
+                  <input
+                      type="checkbox"
+                      id="import-select-all"
+                      className="h-4 w-4 mr-3 bg-[#003638] border-[#00796B] text-[#26A69A] rounded focus:ring-[#4DB6AC]"
+                      checked={parsedPatients.every(p => p.isSelected) && parsedPatients.length > 0}
+                      onChange={handleToggleSelectAll}
+                  />
+                  <label htmlFor="import-select-all" className="text-white font-bold">Select All</label>
+              </div>
+              <ul className="space-y-1">
+                {parsedPatients.map((p, index) => (
+                  <li key={p.idNumber || index} className="text-white flex items-center p-1 rounded hover:bg-black hover:bg-opacity-20 cursor-pointer" onClick={() => handleTogglePatientSelection(index)}>
+                     <input
+                        type="checkbox"
+                        className="h-4 w-4 mr-3 bg-[#003638] border-[#00796B] text-[#26A69A] rounded focus:ring-[#4DB6AC] pointer-events-none"
+                        checked={p.isSelected}
+                        readOnly
+                    />
+                    {p.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-between mt-6">
+              <button onClick={() => setStep(2)} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Back</button>
+              <button onClick={handleConfirmImport} className="bg-[#00796B] hover:bg-[#00695C] text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                  Confirm Import ({parsedPatients.filter(p => p.isSelected).length} selected)
               </button>
             </div>
           </div>
@@ -514,6 +576,7 @@ interface PatientRowProps {
   patient: Patient;
   index: number;
   onUpdate: (updatedData: Partial<Patient>) => void;
+  expandCollapseSignal: { version: number; expand: boolean };
 }
 
 const DataItem: React.FC<{ label: string; value: string | undefined, isCode?: boolean }> = ({ label, value, isCode = false }) => (
@@ -563,9 +626,13 @@ const PatientChevronIcon: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) =
 );
 
 
-const PatientRow: React.FC<PatientRowProps> = ({ patient, index, onUpdate }) => {
+const PatientRow: React.FC<PatientRowProps> = ({ patient, index, onUpdate, expandCollapseSignal }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
     
+    React.useEffect(() => {
+        setIsExpanded(expandCollapseSignal.expand);
+    }, [expandCollapseSignal]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         
@@ -725,6 +792,7 @@ interface PatientTableProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   onUpdatePatient: (patientIdNumber: string, updatedData: Partial<Patient>) => void;
+  expandCollapseSignal: { version: number; expand: boolean };
 }
 
 const InfoCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
@@ -741,7 +809,7 @@ const ChevronIcon: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => (
 );
 
 
-const PatientTable: React.FC<PatientTableProps> = ({ info, patients, isCollapsed, onToggleCollapse, onUpdatePatient }) => {
+const PatientTable: React.FC<PatientTableProps> = ({ info, patients, isCollapsed, onToggleCollapse, onUpdatePatient, expandCollapseSignal }) => {
   return (
     <div className="bg-[#004D40] bg-opacity-50 rounded-xl shadow-2xl overflow-hidden transition-all duration-300">
       {/* Table Header */}
@@ -769,6 +837,7 @@ const PatientTable: React.FC<PatientTableProps> = ({ info, patients, isCollapsed
               patient={patient}
               index={index}
               onUpdate={(data) => onUpdatePatient(patient.idNumber, data)}
+              expandCollapseSignal={expandCollapseSignal}
             />
           ))}
         </div>
@@ -1006,13 +1075,31 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
                 const procedureCodesValue = `Main code: ${mainCode}            All codes: (${procedureCodes})`;
 
                 const tableData = [
-                    { label: 'Date', value: new Date(list.info.date + 'T00:00:00').toLocaleDateString('en-GB') },
+                    { label: 'Date', value: new Date(list.info.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) },
                     { label: 'Hospital Name', value: list.info.hospitalLocation },
                     { label: 'Surgeon', value: surgeonText },
                     { label: 'ICD 10 Codes', value: String(patient.icd10Codes || 'N/A') },
                     { label: 'Procedure Codes', value: procedureCodesValue },
-                    { label: 'Time', value: `In: ${patient.inTime || 'N/A'}  Out: ${patient.outTime || 'N/A'}`},
-                    { label: 'BMI', value: `W: ${patient.weight || 'N/A'}kg  H: ${patient.height || 'N/A'}m  BMI: ${bmi}`},
+                    { 
+                        label: 'Time', 
+                        value: [
+                            { text: 'In:', bold: true },
+                            { text: ` ${patient.inTime || 'N/A'}  `, bold: false },
+                            { text: 'Out:', bold: true },
+                            { text: ` ${patient.outTime || 'N/A'}`, bold: false }
+                        ]
+                    },
+                    { 
+                        label: 'BMI', 
+                        value: [
+                            { text: 'W:', bold: true },
+                            { text: ` ${patient.weight || 'N/A'}kg  `, bold: false },
+                            { text: 'H:', bold: true },
+                            { text: ` ${patient.height || 'N/A'}m  `, bold: false },
+                            { text: 'BMI:', bold: true },
+                            { text: ` ${bmi}`, bold: false }
+                        ]
+                    },
                     { label: 'Procedure Codes', value: staticCodes.join(', ')}
                 ];
 
@@ -1023,9 +1110,22 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
                     if (index === 7 && row.label === 'Procedure Codes') billingDoc.setTextColor(0, 0, 255); else billingDoc.setTextColor(0, 0, 0);
                     billingDoc.text(row.label, tableX + 5, tableY + textOffsetY);
                     billingDoc.setTextColor(0, 0, 0); 
-                    billingDoc.setFont('Helvetica', 'normal');
-                    const valueText = billingDoc.splitTextToSize(row.value, col2Width - 10);
-                    billingDoc.text(valueText, tableX + col1Width + 5, tableY + textOffsetY - (valueText.length > 1 ? 5 : 0));
+
+                    const valueX = tableX + col1Width + 5;
+                    const valueY = tableY + textOffsetY;
+
+                    if (Array.isArray(row.value)) {
+                        let currentX = valueX;
+                        (row.value as { text: string; bold: boolean }[]).forEach(part => {
+                            billingDoc.setFont('Helvetica', part.bold ? 'bold' : 'normal');
+                            billingDoc.text(part.text, currentX, valueY);
+                            currentX += billingDoc.getTextWidth(part.text);
+                        });
+                    } else {
+                        billingDoc.setFont('Helvetica', 'normal');
+                        const valueText = billingDoc.splitTextToSize(String(row.value), col2Width - 10);
+                        billingDoc.text(valueText, valueX, valueY - (valueText.length > 1 ? 5 : 0));
+                    }
                     tableY += rowHeight;
                 });
                 billingDoc.save(`Billing ${patient.name}.pdf`);
@@ -1200,9 +1300,10 @@ interface TheaterListViewProps {
     onOpenQuickImportModal: (listId: number) => void;
     emailHeaderTemplate: string;
     emailBodyTemplate: string;
+    expandCollapseSignal: { version: number; expand: boolean };
 }
 
-const TheaterListView: React.FC<TheaterListViewProps> = ({ list, doctors, onDelete, onUpdatePatient, onOpenQuickImportModal, emailHeaderTemplate, emailBodyTemplate }) => {
+const TheaterListView: React.FC<TheaterListViewProps> = ({ list, doctors, onDelete, onUpdatePatient, onOpenQuickImportModal, emailHeaderTemplate, emailBodyTemplate, expandCollapseSignal }) => {
     const [isCollapsed, setIsCollapsed] = React.useState(false);
 
     const handleToggleCollapse = () => {
@@ -1219,6 +1320,7 @@ const TheaterListView: React.FC<TheaterListViewProps> = ({ list, doctors, onDele
                         isCollapsed={isCollapsed}
                         onToggleCollapse={handleToggleCollapse}
                         onUpdatePatient={(patientIdNumber, data) => onUpdatePatient(list.id, patientIdNumber, data)}
+                        expandCollapseSignal={expandCollapseSignal}
                     />
                 </div>
                 {!isCollapsed && (
@@ -1485,16 +1587,10 @@ interface QuickImportModalProps {
   onImport: (patients: Partial<Patient>[]) => void;
 }
 
-const CheckCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-300" viewBox="0 0 20 20" fill="currentColor" {...props}>
-    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-  </svg>
-);
-
 const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, onImport }) => {
   const [fileName, setFileName] = React.useState<string>('');
   const [file, setFile] = React.useState<File | null>(null);
-  const [parsedData, setParsedData] = React.useState<Partial<Patient>[]>([]);
+  const [parsedData, setParsedData] = React.useState<(Partial<Patient> & { isSelected: boolean })[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -1542,8 +1638,6 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
         const getCell = (col: number, row: number): any => {
             const cell_ref = XLSX.utils.encode_cell({ c: col, r: row - 1 });
             const cell = worksheet[cell_ref];
-            // .w is the formatted text. Use it for values that might be dates/times.
-            // .v is the raw value. Prioritize .w if it exists.
             return cell ? (cell.w || cell.v) : undefined;
         };
 
@@ -1581,7 +1675,7 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
             throw new Error("No valid patient data found in the specified format.");
         }
 
-        setParsedData(importedData);
+        setParsedData(importedData.map(p => ({ ...p, isSelected: true })));
         setIsLoading(false);
       } catch (err) {
         console.error("File parsing error:", err);
@@ -1599,8 +1693,24 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
   };
   
   const handleConfirmImport = () => {
-    onImport(parsedData);
+    const selectedData = parsedData.filter(p => p.isSelected).map(({isSelected, ...rest}) => rest);
+    onImport(selectedData);
     handleClose();
+  };
+
+  const handleTogglePatientSelection = (patientIndex: number) => {
+    setParsedData(currentData => 
+      currentData.map((p, index) => 
+        index === patientIndex ? { ...p, isSelected: !p.isSelected } : p
+      )
+    );
+  };
+
+  const handleToggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setParsedData(currentData => 
+      currentData.map(p => ({ ...p, isSelected: checked }))
+    );
   };
 
   return (
@@ -1632,10 +1742,26 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
             <div>
                 <p className="text-lg text-white mb-2">Data for the following patients will be imported:</p>
                 <div className="bg-[#003638] p-3 rounded-md max-h-60 overflow-y-auto mb-6">
+                    <div className="flex items-center p-1 mb-2 border-b border-[#00796B]">
+                        <input
+                            type="checkbox"
+                            id="quick-import-select-all"
+                            className="h-4 w-4 mr-3 bg-[#003638] border-[#00796B] text-[#26A69A] rounded focus:ring-[#4DB6AC]"
+                            checked={parsedData.every(p => p.isSelected) && parsedData.length > 0}
+                            onChange={handleToggleSelectAll}
+                        />
+                        <label htmlFor="quick-import-select-all" className="text-white font-bold">Select All</label>
+                    </div>
                     <ul className="space-y-1">
-                        {parsedData.map(p => (
-                            <li key={p.name} className="text-white flex items-center">
-                                <CheckCircleIcon /> {p.name}
+                        {parsedData.map((p, index) => (
+                           <li key={p.name} className="text-white flex items-center p-1 rounded hover:bg-black hover:bg-opacity-20 cursor-pointer" onClick={() => handleTogglePatientSelection(index)}>
+                                <input
+                                    type="checkbox"
+                                    className="h-4 w-4 mr-3 bg-[#003638] border-[#00796B] text-[#26A69A] rounded focus:ring-[#4DB6AC] pointer-events-none"
+                                    checked={p.isSelected}
+                                    readOnly
+                                />
+                                {p.name}
                             </li>
                         ))}
                     </ul>
@@ -1643,7 +1769,7 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
                 <div className="flex justify-between mt-6">
                     <button onClick={handleClose} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Cancel</button>
                     <button onClick={handleConfirmImport} className="bg-[#00796B] hover:bg-[#00695C] text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                        Confirm Import
+                        Confirm Import ({parsedData.filter(p => p.isSelected).length} selected)
                     </button>
                 </div>
             </div>
@@ -1829,6 +1955,7 @@ const App: React.FC = () => {
   const [isEmailTemplateModalOpen, setIsEmailTemplateModalOpen] = React.useState<boolean>(false);
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = React.useState<boolean>(false);
   const [listToDeleteId, setListToDeleteId] = React.useState<number | null>(null);
+  const [expandCollapseSignal, setExpandCollapseSignal] = React.useState({ version: 0, expand: false });
 
   const [theaterLists, setTheaterLists] = React.useState<TheaterList[]>(() => {
     try {
@@ -1890,6 +2017,10 @@ const App: React.FC = () => {
 
 
   const handleImport = (info: TheaterListInfo, parsedPatients: Patient[]) => {
+    if (parsedPatients.length === 0) {
+      setIsImportModalOpen(false);
+      return;
+    }
     const newList: TheaterList = {
       id: Date.now(),
       info,
@@ -1905,7 +2036,11 @@ const App: React.FC = () => {
   };
 
   const handleQuickImport = (quickData: Partial<Patient>[]) => {
-    if (activeListIdForQuickImport === null) return;
+    if (activeListIdForQuickImport === null || quickData.length === 0) {
+      setIsQuickImportModalOpen(false);
+      setActiveListIdForQuickImport(null);
+      return;
+    };
     
     setTheaterLists(prevLists => 
       prevLists.map(list => {
@@ -2007,20 +2142,31 @@ const App: React.FC = () => {
       />
       <main className="container mx-auto p-4 md:p-8">
         {theaterLists.length > 0 ? (
-          <div className="space-y-8">
-            {theaterLists.map(list => (
-              <TheaterListView 
-                key={list.id} 
-                list={list} 
-                doctors={doctors}
-                onDelete={() => handleOpenDeleteConfirm(list.id)} 
-                onUpdatePatient={handleUpdatePatient}
-                onOpenQuickImportModal={handleOpenQuickImportModal}
-                emailHeaderTemplate={emailHeaderTemplate}
-                emailBodyTemplate={emailBodyTemplate}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-end mb-4">
+                <button
+                    onClick={() => setExpandCollapseSignal(prev => ({ version: prev.version + 1, expand: !prev.expand }))}
+                    className="bg-[#26A69A] hover:bg-[#00897B] text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
+                >
+                    {expandCollapseSignal.expand ? 'Collapse All Patients' : 'Expand All Patients'}
+                </button>
+            </div>
+            <div className="space-y-8">
+              {theaterLists.map(list => (
+                <TheaterListView 
+                  key={list.id} 
+                  list={list} 
+                  doctors={doctors}
+                  onDelete={() => handleOpenDeleteConfirm(list.id)} 
+                  onUpdatePatient={handleUpdatePatient}
+                  onOpenQuickImportModal={handleOpenQuickImportModal}
+                  emailHeaderTemplate={emailHeaderTemplate}
+                  emailBodyTemplate={emailBodyTemplate}
+                  expandCollapseSignal={expandCollapseSignal}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <WelcomeScreen onImportClick={() => setIsImportModalOpen(true)} />
         )}
