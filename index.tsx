@@ -26,9 +26,6 @@ interface Patient {
   tci?: string;
   ketamine?: string;
   sedationType?: 'Deep' | 'Awake';
-  caution?: boolean;
-  penicillinAllergy?: boolean;
-  previouslyDone?: boolean;
   notes?: string[];
 }
 
@@ -357,9 +354,6 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
             tci: '',
             ketamine: '',
             sedationType: 'Deep',
-            caution: false,
-            penicillinAllergy: false,
-            previouslyDone: false,
             notes: Array(7).fill(''),
           };
         });
@@ -747,33 +741,34 @@ const PatientRow: React.FC<PatientRowProps> = ({ patient, index, onUpdate, expan
                             </div>
                             
                             {/* Right Column */}
-                            <div className="w-3/4">
-                                <div className="flex items-center space-x-8 mb-4">
-                                    <FormCheckbox label="Caution" name="caution" checked={patient.caution || false} onChange={handleChange} />
-                                    <FormCheckbox label="Penicillin Allergy" name="penicillinAllergy" checked={patient.penicillinAllergy || false} onChange={handleChange} />
-                                    <FormCheckbox label="Previously Done" name="previouslyDone" checked={patient.previouslyDone || false} onChange={handleChange} />
-                                </div>
-                                <div className="mb-4">
+                             <div className="w-3/4">
+                                <div className="space-y-4">
                                     <FormInput 
                                         label="Procedure" 
                                         name="procedureSummary" 
                                         value={patient.procedureSummary || ''} 
                                         onChange={handleChange}
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-[#B2DFDB] mb-2">Patient Notes</label>
-                                    <div className="space-y-2">
-                                        {(patient.notes || Array(7).fill('')).map((note, i) => (
-                                            <input 
-                                                key={i}
-                                                type="text"
-                                                value={note}
-                                                onChange={(e) => handleNoteChange(i, e.target.value)}
-                                                placeholder=""
-                                                className="w-full bg-[#003638] border border-[#00796B] text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-[#4DB6AC] focus:outline-none"
-                                            />
-                                        ))}
+                                    <FormInput 
+                                        label="Procedure Codes" 
+                                        name="procedureCodes" 
+                                        value={patient.procedureCodes || ''} 
+                                        onChange={handleChange}
+                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#B2DFDB] mb-2">Patient Notes</label>
+                                        <div className="space-y-2">
+                                            {(patient.notes || Array(7).fill('')).map((note, i) => (
+                                                <input 
+                                                    key={i}
+                                                    type="text"
+                                                    value={note}
+                                                    onChange={(e) => handleNoteChange(i, e.target.value)}
+                                                    placeholder=""
+                                                    className="w-full bg-[#003638] border border-[#00796B] text-white rounded-md p-2 text-sm focus:ring-2 focus:ring-[#4DB6AC] focus:outline-none"
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
