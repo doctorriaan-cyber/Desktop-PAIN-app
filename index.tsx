@@ -906,6 +906,7 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
 
             // Patient data
             addCell(M, start_row, patient.name);
+            addCell(N, start_row, patient.age);
             (patient.notes || Array(7).fill('')).forEach((note, i) => {
                 addCell(M, start_row + 1 + i, note);
             });
@@ -1688,6 +1689,7 @@ const QuickImportModal: React.FC<QuickImportModalProps> = ({ isOpen, onClose, on
 
             const patientData: Partial<Patient> = {
                 name,
+                age: String(getCell(N, start_row) || ''),
                 notes,
                 procedureSummary: getCell(M, start_row + 8),
                 inTime: String(getCell(K, start_row + 3) || ''),
