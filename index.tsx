@@ -1038,6 +1038,12 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
             // Phase 1: Create all Billing Sheets
             list.patients.forEach(patient => {
                 const billingDoc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                billingDoc.setProperties({
+                    title: `Billing Sheet - ${patient.name}`,
+                    subject: `Billing information for procedure on ${new Date(list.info.date + 'T00:00:00').toLocaleDateString('en-GB')}`,
+                    author: 'Dr Riaan Combrinck',
+                    creator: 'Patient List Manager'
+                });
                 billingDoc.setFont('Helvetica', 'normal');
                 billingDoc.setTextColor(0, 0, 0);
                 const pageWidth = billingDoc.internal.pageSize.getWidth();
@@ -1132,6 +1138,12 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
             // Phase 2: Create all Sedation Records
             list.patients.forEach(patient => {
                 const sedationDoc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                sedationDoc.setProperties({
+                    title: `Sedation Record - ${patient.name}`,
+                    subject: `Sedation record for procedure on ${new Date(list.info.date + 'T00:00:00').toLocaleDateString('en-GB')}`,
+                    author: 'Dr Riaan Combrinck',
+                    creator: 'Patient List Manager'
+                });
                 sedationDoc.setFont('Helvetica', 'normal');
                 sedationDoc.setTextColor(0, 0, 0);
                 const pageWidth = sedationDoc.internal.pageSize.getWidth();
@@ -1142,6 +1154,31 @@ const ActionPanel: React.FC<ActionPanelProps> = ({ list, doctors, onDeleteClick,
                 const sedStickerEndY = drawPatientSticker(sedationDoc, patient, 80);
 
                 let yPos = Math.max(sedHeaderEndY, sedStickerEndY) + 20;
+
+                sedationDoc.setFontSize(10);
+                const surgeon = doctors.find(d => d.name === list.info.doctorName);
+                const surgeonText = surgeon ? `${surgeon.name} (${surgeon.practiceNumber})` : list.info.doctorName;
+                const formattedDate = new Date(list.info.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                const infoFields = [
+                    { label: 'Surgeon:', value: surgeonText },
+                    { label: 'Hospital:', value: list.info.hospitalLocation },
+                    { label: 'Date:', value: formattedDate }
+                ];
+
+                infoFields.forEach(({label, value}) => {
+                    sedationDoc.setFont('Helvetica', 'bold');
+                    sedationDoc.text(label, leftMargin, yPos);
+                    sedationDoc.setFont('Helvetica', 'normal');
+                    const splitValue = sedationDoc.splitTextToSize(String(value || 'N/A'), pageWidth - leftMargin * 2 - 80);
+                    sedationDoc.text(splitValue, leftMargin + 80, yPos);
+                    yPos += (splitValue.length * (lineSpacing + 2));
+                });
+
+                yPos += lineSpacing / 2;
+                sedationDoc.setDrawColor(180, 180, 180);
+                sedationDoc.line(leftMargin, yPos, pageWidth - leftMargin, yPos);
+                yPos += lineSpacing;
                 
                 const weight = parseFloat(patient.weight || '0');
                 const height = parseFloat(patient.height || '0');
