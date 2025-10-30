@@ -4,6 +4,7 @@ import * as ReactDOM from 'react-dom/client';
 
 // From types.ts
 interface Patient {
+  internalId: string;
   name: string;
   telephone: string;
   dob: string;
@@ -327,7 +328,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
 
         if (json.length < 2) throw new Error("Spreadsheet is empty or has no data rows.");
 
-        const localParsedPatients: Patient[] = json.slice(1).map((row: any[]) => {
+        const localParsedPatients: Patient[] = json.slice(1).map((row: any[], index: number) => {
           let telephone = String(row[1] || '');
           if (telephone && /^\d+$/.test(telephone) && !telephone.startsWith('0')) {
             telephone = '0' + telephone;
@@ -343,6 +344,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, do
             dob = String(dobValue);
           }
           return {
+            internalId: `${Date.now()}-${index}`,
             name: row[0] || '', telephone, dob, email: row[3] || '', idNumber: row[4] || '',
             age: row[5] || '', medicalAidName: row[6] || '', medicalAidNumber: row[7] || '',
             dependantNumber: row[8] || '', gender: row[9] || '', authNumber: row[10] || '',
@@ -786,7 +788,7 @@ interface PatientTableProps {
   patients: Patient[];
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onUpdatePatient: (patientIdNumber: string, updatedData: Partial<Patient>) => void;
+  onUpdatePatient: (patientInternalId: string, updatedData: Partial<Patient>) => void;
   expandCollapseSignal: { version: number; expand: boolean };
 }
 
@@ -828,10 +830,10 @@ const PatientTable: React.FC<PatientTableProps> = ({ info, patients, isCollapsed
         <div className="divide-y divide-[#00796B]">
           {patients.map((patient, index) => (
             <PatientRow 
-              key={patient.idNumber || index}
+              key={patient.internalId}
               patient={patient}
               index={index}
-              onUpdate={(data) => onUpdatePatient(patient.idNumber, data)}
+              onUpdate={(data) => onUpdatePatient(patient.internalId, data)}
               expandCollapseSignal={expandCollapseSignal}
             />
           ))}
@@ -1329,7 +1331,7 @@ interface TheaterListViewProps {
     list: TheaterList;
     doctors: Doctor[];
     onDelete: () => void;
-    onUpdatePatient: (listId: number, patientIdNumber: string, updatedData: Partial<Patient>) => void;
+    onUpdatePatient: (listId: number, patientInternalId: string, updatedData: Partial<Patient>) => void;
     onOpenQuickImportModal: (listId: number) => void;
     emailHeaderTemplate: string;
     emailBodyTemplate: string;
@@ -1352,7 +1354,7 @@ const TheaterListView: React.FC<TheaterListViewProps> = ({ list, doctors, onDele
                         patients={list.patients} 
                         isCollapsed={isCollapsed}
                         onToggleCollapse={handleToggleCollapse}
-                        onUpdatePatient={(patientIdNumber, data) => onUpdatePatient(list.id, patientIdNumber, data)}
+                        onUpdatePatient={(patientInternalId, data) => onUpdatePatient(list.id, patientInternalId, data)}
                         expandCollapseSignal={expandCollapseSignal}
                     />
                 </div>
@@ -1994,7 +1996,18 @@ const App: React.FC = () => {
   const [theaterLists, setTheaterLists] = React.useState<TheaterList[]>(() => {
     try {
       const savedLists = localStorage.getItem('theaterLists');
-      return savedLists ? JSON.parse(savedLists) : [];
+      if (savedLists) {
+          const lists: TheaterList[] = JSON.parse(savedLists);
+          // Migration step to add internalId if it's missing
+          return lists.map(list => ({
+              ...list,
+              patients: list.patients.map((patient, index) => ({
+                  ...patient,
+                  internalId: (patient as any).internalId || `${list.id}-${patient.idNumber || index}`
+              }))
+          }));
+      }
+      return [];
     } catch (error) {
       console.error("Error parsing theater lists from localStorage", error);
       return [];
@@ -2146,14 +2159,14 @@ const App: React.FC = () => {
     setIsEmailTemplateModalOpen(false);
   };
 
-  const handleUpdatePatient = (listId: number, patientIdNumber: string, updatedPatientData: Partial<Patient>) => {
+  const handleUpdatePatient = (listId: number, patientInternalId: string, updatedPatientData: Partial<Patient>) => {
     setTheaterLists(prevLists => 
       prevLists.map(list => {
         if (list.id === listId) {
           return {
             ...list,
             patients: list.patients.map(patient => 
-              patient.idNumber === patientIdNumber 
+              patient.internalId === patientInternalId
                 ? { ...patient, ...updatedPatientData }
                 : patient
             )
